@@ -1,0 +1,12 @@
+[package]
+name = "meta"
+version = "0.1.0"
+authors = ["baturalp"]
+edition = "2021"
+publish = false
+
+[dev-dependencies]
+path = ".."
+
+[dependencies.multiversx-sc-meta]
+version = "0.43.5"
