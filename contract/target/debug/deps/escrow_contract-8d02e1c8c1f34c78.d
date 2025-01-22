@@ -1,6 +1,6 @@
-/home/yavuz/MultiversX/SmartContracts/prj/contract/target/debug/deps/escrow_contract-8d02e1c8c1f34c78: src/lib.rs
+/home/yavuz/cursor/prj/contract/target/debug/deps/escrow_contract-8d02e1c8c1f34c78: src/lib.rs
 
-/home/yavuz/MultiversX/SmartContracts/prj/contract/target/debug/deps/escrow_contract-8d02e1c8c1f34c78.d: src/lib.rs
+/home/yavuz/cursor/prj/contract/target/debug/deps/escrow_contract-8d02e1c8c1f34c78.d: src/lib.rs
 
 src/lib.rs:
 

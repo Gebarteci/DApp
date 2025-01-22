@@ -3,13 +3,8 @@
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
-use multiversx_sc::testing::*;
-use multiversx_sc::codec::multi_value::MultiValueEncoded;
-
 use core::ops::Deref;
-use multiversx_sc::testing::*;
-use multiversx_sc::codec::multi_value::MultiValueEncoded;
-use super::EscrowContract; // Import the contract trait directly
+use multiversx_sc::types::MultiValueEncoded;
 
 #[type_abi]
 #[derive(
