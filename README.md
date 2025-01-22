@@ -46,6 +46,4 @@ The smart contract is deployed on the MultiversX Devnet at:
 - Node.js (>=14.0.0)
 - mxpy (MultiversX SDK)
 
-### Smart Contract Deployment
 
-1. Build the contract:
