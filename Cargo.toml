@@ -9,10 +9,10 @@ publish = false
 path = "src/lib.rs"
 
 [dependencies]
-multiversx-sc = "0.43.5"
+multiversx-sc = "0.55.0"
 
 [dev-dependencies]
-multiversx-sc-scenario = "0.43.5"
+multiversx-sc-scenario = "0.55.0"
 
 [workspace]
 members = [".", "meta"]

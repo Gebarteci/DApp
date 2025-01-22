@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dev-dependencies]
-path = ".."
+escrow-contract = {path = ".."}
 
 [dependencies.multiversx-sc-meta]
-version = "0.43.5"
+version = "0.55.0"
