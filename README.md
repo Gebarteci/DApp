@@ -9,7 +9,16 @@ This project consists of:
 - A Node.js Express backend server
 - A simple HTML/JavaScript frontend interface
 
-The smart contract is deployed on the MultiversX Devnet at:
++Develop a smart contract to manage token escrow transactions.
+
++Provide a secure and decentralized mechanism for exchanging tokens between users.
+
++Enable users to create trade offers, accept them, or cancel them when necessary.
+
+-Deploy and test the application on the MultiversX Testnet.
+
++Build a user-friendly interface for interacting with the token escrow system.
+
 `erd1qlp7560vds526xgkl88d4s0atq67yts6l86vgrv3m4w5xdu8rprssdglu0`
 
 ## Smart Contract Features
