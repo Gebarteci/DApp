@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname)));
 
 // Configuration
 const proxy = new ProxyNetworkProvider("https://devnet-gateway.multiversx.com");
-const contractAddress = "erd1qqqqqqqqqqqqqpgqd9rvv2n378e27jcts8vfwynpx0gfl5ufz6hqhfy0u0";
+const contractAddress = "erd1qlp7560vds526xgkl88d4s0atq67yts6l86vgrv3m4w5xdu8rprssdglu0";
 const chainId = "D";
 
 async function sendTransaction(senderPrivateKey, value, data) {
