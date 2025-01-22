@@ -1,12 +1,23 @@
 {
   "name": "ui",
   "version": "1.0.0",
-  "description": "",
+  "description": "Escrow DApp UI",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@multiversx/sdk-core": "^12.1.1",
+    "@multiversx/sdk-network-providers": "^2.0.0",
+    "@multiversx/sdk-wallet": "^4.0.0",
+    "axios": "^1.4.0",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }

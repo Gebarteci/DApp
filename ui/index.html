@@ -2,41 +2,141 @@
 <html>
 <head>
     <title>Escrow DApp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 8px;
+            width: 100%;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+    </style>
 </head>
 <body>
-    <h1>Create Offer</h1>
-    <input type="text" id="senderPrivateKey" placeholder="Sender Private Key"><br>
-    <input type="text" id="recipient" placeholder="Recipient Address"><br>
-    <input type="number" id="amount" placeholder="Amount (WEGLD)"><br>
-    <button onclick="createOffer()">Create Offer</button>
-    <div id="result"></div>
+    <div class="section">
+        <h2>Create Offer</h2>
+        <input type="text" id="senderPrivateKey" placeholder="Sender Private Key">
+        <input type="text" id="recipient" placeholder="Recipient Address">
+        <input type="number" id="amount" placeholder="Amount (WEGLD)">
+        <button onclick="createOffer()">Create Offer</button>
+        <div id="result" class="result"></div>
+    </div>
 
-    <h1>Get Offers</h1>
-    <input type="text" id="userAddress" placeholder="User Address"><br>
-    <button onclick="getOffers()">Get Offers</button>
-    <div id="offers"></div>
+    <div class="section">
+        <h2>Get Offers</h2>
+        <input type="text" id="userAddress" placeholder="User Address">
+        <button onclick="getOffers()">Get Offers</button>
+        <div id="offers" class="result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Cancel Offer</h2>
+        <input type="text" id="cancelPrivateKey" placeholder="Sender Private Key">
+        <input type="text" id="cancelOfferId" placeholder="Offer ID">
+        <button onclick="cancelOffer()">Cancel Offer</button>
+        <div id="cancelResult" class="result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Accept Offer</h2>
+        <input type="text" id="acceptPrivateKey" placeholder="Sender Private Key">
+        <input type="text" id="acceptOfferId" placeholder="Offer ID">
+        <button onclick="acceptOffer()">Accept Offer</button>
+        <div id="acceptResult" class="result"></div>
+    </div>
 
     <script>
         async function createOffer() {
-            const senderPrivateKey = document.getElementById('senderPrivateKey').value;
-            const recipient = document.getElementById('recipient').value;
-            const amount = document.getElementById('amount').value;
+            try {
+                const senderPrivateKey = document.getElementById('senderPrivateKey').value;
+                const recipient = document.getElementById('recipient').value;
+                const amount = document.getElementById('amount').value;
 
-            const response = await fetch('/createOffer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ senderPrivateKey, recipient, amount }),
-            });
+                const response = await fetch('/createOffer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderPrivateKey, recipient, amount }),
+                });
 
-            const data = await response.json();
-            document.getElementById('result').innerText = `Transaction Hash: ${data.txHash}`;
+                const data = await response.json();
+                document.getElementById('result').innerText = `Transaction Hash: ${data.txHash}`;
+            } catch (error) {
+                document.getElementById('result').innerText = `Error: ${error.message}`;
+            }
         }
 
         async function getOffers() {
-            const userAddress = document.getElementById('userAddress').value;
-            const response = await fetch(`/getOffers/${userAddress}`);
-            const offers = await response.json();
-            document.getElementById('offers').innerText = JSON.stringify(offers, null, 2); // Pretty print JSON
+            try {
+                const userAddress = document.getElementById('userAddress').value;
+                const response = await fetch(`/getOffers/${userAddress}`);
+                const offers = await response.json();
+                document.getElementById('offers').innerText = JSON.stringify(offers, null, 2);
+            } catch (error) {
+                document.getElementById('offers').innerText = `Error: ${error.message}`;
+            }
+        }
+
+        async function cancelOffer() {
+            try {
+                const senderPrivateKey = document.getElementById('cancelPrivateKey').value;
+                const offerId = document.getElementById('cancelOfferId').value;
+
+                const response = await fetch('/cancelOffer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderPrivateKey, offerId }),
+                });
+
+                const data = await response.json();
+                document.getElementById('cancelResult').innerText = `Transaction Hash: ${data.txHash}`;
+            } catch (error) {
+                document.getElementById('cancelResult').innerText = `Error: ${error.message}`;
+            }
+        }
+
+        async function acceptOffer() {
+            try {
+                const senderPrivateKey = document.getElementById('acceptPrivateKey').value;
+                const offerId = document.getElementById('acceptOfferId').value;
+
+                const response = await fetch('/acceptOffer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderPrivateKey, offerId }),
+                });
+
+                const data = await response.json();
+                document.getElementById('acceptResult').innerText = `Transaction Hash: ${data.txHash}`;
+            } catch (error) {
+                document.getElementById('acceptResult').innerText = `Error: ${error.message}`;
+            }
         }
     </script>
 </body>

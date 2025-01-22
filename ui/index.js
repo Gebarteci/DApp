@@ -1,7 +1,6 @@
 const express = require('express');
 const { ProxyNetworkProvider } = require('@multiversx/sdk-network-providers');
 const { Address, TransactionPayload, Transaction } = require('@multiversx/sdk-core');
-const { TransactionBuilder } = require('@multiversx/sdk-transaction-builder');
 const { Wallet } = require('@multiversx/sdk-wallet');
 const axios = require('axios');
 
@@ -31,11 +30,9 @@ async function sendTransaction(senderPrivateKey, recipient, amount, data) {
     chainID: chainId,
   });
 
-  const transactionBuilder = new TransactionBuilder({ transaction });
+  transaction.applySignature(senderWallet.sign(transaction.serializeForSigning()));
 
-  const signedTransaction = transactionBuilder.buildSigned(senderWallet);
-
-  const txHash = await proxy.sendTransaction(signedTransaction);
+  const txHash = await proxy.sendTransaction(transaction);
   return txHash.toString();
 }
 
