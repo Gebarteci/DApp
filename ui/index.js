@@ -1,98 +1,157 @@
 const express = require('express');
+const path = require('path');
 const { ProxyNetworkProvider } = require('@multiversx/sdk-network-providers');
 const { Address, TransactionPayload, Transaction } = require('@multiversx/sdk-core');
-const { Wallet } = require('@multiversx/sdk-wallet');
-const axios = require('axios');
+const { UserSigner } = require('@multiversx/sdk-wallet');
 
 const app = express();
-const port = 3000;
+const port = 4000;
 
-app.use(express.json()); // Enable parsing JSON request bodies
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
-// Configuration (replace with your values)
-const proxy = new ProxyNetworkProvider("https://testnet-gateway.multiversx.com"); // Testnet Gateway
-const contractAddress = "erd1..."; // Your contract address
-const chainId = "T"; // Testnet Chain ID
+// Configuration
+const proxy = new ProxyNetworkProvider("https://devnet-gateway.multiversx.com");
+const contractAddress = "erd1qqqqqqqqqqqqqpgqd9rvv2n378e27jcts8vfwynpx0gfl5ufz6hqhfy0u0";
+const chainId = "D";
 
-// Function to build and send a transaction
-async function sendTransaction(senderPrivateKey, recipient, amount, data) {
-  const senderWallet = Wallet.fromPrivateKey(senderPrivateKey);
-  const senderAddress = senderWallet.getAddress();
+async function sendTransaction(senderPrivateKey, value, data) {
+    try {
+        // Convert hex private key to buffer and create signer
+        const secretKey = Buffer.from(senderPrivateKey, 'hex');
+        const signer = new UserSigner(secretKey);
+        
+        // Get the address
+        const senderAddress = signer.getAddress();
+        console.log('Address:', senderAddress.bech32());
 
-  const transaction = new Transaction({
-    nonce: await proxy.getAccount(senderAddress).then((account) => account.nonce),
-    sender: senderAddress,
-    receiver: new Address(contractAddress),
-    value: amount, // Amount in WEGLD
-    gasLimit: 6000000, // Adjust as needed
-    gasPrice: 1000000000,
-    data: new TransactionPayload(data),
-    chainID: chainId,
-  });
+        const transaction = new Transaction({
+            nonce: await proxy.getAccount(senderAddress).then((account) => account.nonce),
+            value: value,
+            sender: senderAddress,
+            receiver: new Address(contractAddress),
+            gasLimit: 60000000,
+            gasPrice: 1000000000,
+            data: new TransactionPayload(data),
+            chainID: chainId,
+            version: 1
+        });
 
-  transaction.applySignature(senderWallet.sign(transaction.serializeForSigning()));
+        const signature = await signer.sign(transaction.serializeForSigning());
+        transaction.applySignature(signature);
 
-  const txHash = await proxy.sendTransaction(transaction);
-  return txHash.toString();
+        const txHash = await proxy.sendTransaction(transaction);
+        return txHash.toString();
+    } catch (error) {
+        console.error('Transaction error:', error);
+        throw error;
+    }
 }
 
-// Endpoint to create an offer
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Create offer endpoint
 app.post('/createOffer', async (req, res) => {
-  try {
-    const { senderPrivateKey, recipient, amount } = req.body;
-    const data = `create@${new Address(recipient).toString()}`; // Function call data
-    const txHash = await sendTransaction(senderPrivateKey, recipient, amount, data);
-    res.json({ txHash });
-  } catch (error) {
-    console.error("Error creating offer:", error);
-    res.status(500).json({ error: error.message });
-  }
+    try {
+        const { senderPrivateKey, recipient, amount } = req.body;
+        const data = `create@${new Address(recipient).hex()}`;
+        const txHash = await sendTransaction(senderPrivateKey, amount, data);
+        res.json({ txHash });
+    } catch (error) {
+        console.error("Error creating offer:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Endpoint to get all offers for a user
+// Get offers endpoint
 app.get('/getOffers/:userAddress', async (req, res) => {
-  try {
-    const userAddress = req.params.userAddress;
-    const offers = await proxy.queryContract({
-      contract: contractAddress,
-      func: "getUserAllOffers",
-      args: [new Address(userAddress).toHex()],
-    });
-    res.json(offers);
-  } catch (error) {
-    console.error("Error getting offers:", error);
-    res.status(500).json({ error: error.message });
-  }
+    try {
+        const userAddress = req.params.userAddress;
+        const query = {
+            scAddress: contractAddress,
+            funcName: "getUserActiveOffers",
+            args: [new Address(userAddress).hex()]
+        };
+        const offers = await proxy.queryContract(query);
+        res.json(offers);
+    } catch (error) {
+        console.error("Error getting offers:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Endpoint to cancel an offer
+// Add endpoint to get incoming offers
+app.get('/getIncomingOffers/:userAddress', async (req, res) => {
+    try {
+        const userAddress = req.params.userAddress;
+        const query = {
+            scAddress: contractAddress,
+            funcName: "getUserIncomingActiveOffers",
+            args: [new Address(userAddress).hex()]
+        };
+        const offers = await proxy.queryContract(query);
+        res.json(offers);
+    } catch (error) {
+        console.error("Error getting incoming offers:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Cancel offer endpoint
 app.post('/cancelOffer', async (req, res) => {
-  try {
-    const { senderPrivateKey, offerId } = req.body;
-    const data = `cancelOffer@${offerId}`; // Function call data
-    const txHash = await sendTransaction(senderPrivateKey, contractAddress, 0, data);
-    res.json({ txHash });
-  } catch (error) {
-    console.error("Error canceling offer:", error);
-    res.status(500).json({ error: error.message });
-  }
+    try {
+        const { senderPrivateKey, offerId } = req.body;
+        const data = `cancelOffer@${offerId}`;
+        const txHash = await sendTransaction(senderPrivateKey, "0", data);
+        res.json({ txHash });
+    } catch (error) {
+        console.error("Error canceling offer:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Endpoint to accept an offer
+// Accept offer endpoint
 app.post('/acceptOffer', async (req, res) => {
-  try {
-    const { senderPrivateKey, offerId } = req.body;
-    const data = `acceptOffer@${offerId}`; // Function call data
-    const txHash = await sendTransaction(senderPrivateKey, contractAddress, 0, data);
-    res.json({ txHash });
-  } catch (error) {
-    console.error("Error accepting offer:", error);
-    res.status(500).json({ error: error.message });
-  }
+    try {
+        const { senderPrivateKey, offerId } = req.body;
+        const data = `acceptOffer@${offerId}`;
+        const txHash = await sendTransaction(senderPrivateKey, "0", data);
+        res.json({ txHash });
+    } catch (error) {
+        console.error("Error accepting offer:", error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Implement additional endpoints as needed (e.g., get specific offer details)
+// Add endpoint to get all active offers
+app.get('/getActiveOffers', async (req, res) => {
+    try {
+        const query = {
+            scAddress: contractAddress,
+            funcName: "getActiveOffers",
+            args: []
+        };
+        const offers = await proxy.queryContract(query);
+        res.json(offers);
+    } catch (error) {
+        console.error("Error getting active offers:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
+// Start server
 app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
+    console.log('Available endpoints:');
+    console.log('- GET  /');
+    console.log('- POST /createOffer');
+    console.log('- GET  /getOffers/:userAddress');
+    console.log('- GET  /getIncomingOffers/:userAddress');
+    console.log('- POST /cancelOffer');
+    console.log('- POST /acceptOffer');
+    console.log('- GET  /getActiveOffers');
 });
